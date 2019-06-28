@@ -1,0 +1,110 @@
+Trigger
+
+1.
+create or replace trigger agep before insert or update on applicant
+for each row
+begin
+ :new.age:=floor(months_between(sysdate,:new.DOB)/12);
+end;
+/
+
+2.
+
+create table addressupdate
+(
+text varchar(30),
+datetime date primary key
+);
+CREATE or REPLACE TRIGGER Before_Upddate_address
+ BEFORE 
+ UPDATE ON resume
+ FOR EACH ROW 
+ BEGIN 
+ INSERT INTO addressupdate 
+ Values('Before update row level',sysdate); 
+ END; 
+ / 
+
+------------------------------------------------------------------------------------------------
+Functions
+
+1.
+
+CREATE OR REPLACE FUNCTION totaljobs(comp in varchar)
+RETURN number IS 
+   total number(2) := 0; 
+BEGIN 
+   SELECT sum(vaccancies) into total
+   FROM designations where company_name=comp; 
+    
+   RETURN total; 
+END; 
+/ 
+
+2
+CREATE OR REPLACE FUNCTION expqual(qual in varchar)
+RETURN number IS 
+   total number(2) := 0; 
+BEGIN 
+   SELECT count(*) into total
+   FROM resume  where qualification=qual;
+   RETURN total; 
+END; 
+/
+
+set serveroutput on;
+declare
+total number(3);
+begin
+total:=expqual('B.E ECE');
+dbms_output.put_line(total);
+end;
+/
+------------------------------------------------------------------
+Procedures
+
+1.
+set serveroutput on;
+create or replace procedure loc
+    IS
+    cursor q1 is
+     select fname from resume where address like '%Chennai%';
+     c_q1 q1%rowtype;
+     
+     BEGIN
+     open q1;
+     loop
+     fetch q1 into c_q1;
+     exit when q1%notfound;
+     DBMS_OUTPUT.PUT_LINE(c_q1.fname);
+     end loop;
+     close q1;
+     end;
+/
+
+
+
+2.
+set serveroutput on;
+CREATE OR REPLACE PROCEDURE grading(grade out varchar)is  
+cursor c1 is SELECT sum(experience) as exp from experiences group by username;
+c2 c1%rowtype;
+BEGIN
+open c1;
+loop
+fetch c1 into c2;
+exit when c1%NOTFOUND;
+if c2.exp >5
+then grade:='Advanced';
+elsif c2.exp>3 and c2.exp<=5
+then grade:='Intermediate';
+else
+grade:='Beginner';
+end if;
+end loop;
+close c1;
+END; 
+/
+
+
+ 
